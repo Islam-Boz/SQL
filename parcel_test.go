@@ -33,9 +33,8 @@ func getTestParcel() Parcel {
 func TestAddGetDelete(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
+
 	defer db.Close() // настройте подключение к БД
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
@@ -46,7 +45,7 @@ func TestAddGetDelete(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotEmpty(t, id)
-	parcel.Number = int(id)
+	parcel.Number = id
 	// get
 	// получите только что добавленную посылку, убедитесь в отсутствии ошибки
 	// проверьте, что значения всех полей в полученном объекте совпадают со значениями полей в переменной parcel
@@ -68,9 +67,8 @@ func TestAddGetDelete(t *testing.T) {
 func TestSetAddress(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
+
 	defer db.Close() // настройте подключение к БД
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
@@ -89,8 +87,8 @@ func TestSetAddress(t *testing.T) {
 	require.NoError(t, err)
 
 	got, err := store.Get(id)
-	require.NoError(t, err)
-	require.Equal(t, newAddress, got.Address)
+	assert.NoError(t, err)
+	assert.Equal(t, newAddress, got.Address)
 	// check
 	// получите добавленную посылку и убедитесь, что адрес обновился
 }
@@ -99,9 +97,7 @@ func TestSetAddress(t *testing.T) {
 func TestSetStatus(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	defer db.Close() // настройте подключение к БД
 	store := NewParcelStore(db)
 	parcel := getTestParcel() // настройте подключение к БД
@@ -119,8 +115,8 @@ func TestSetStatus(t *testing.T) {
 	require.NoError(t, err)
 
 	got, err := store.Get(id)
-	require.NoError(t, err)
-	require.Equal(t, ParcelStatusSent, got.Status)
+	assert.NoError(t, err)
+	assert.Equal(t, ParcelStatusSent, got.Status)
 	// check
 	// получите добавленную посылку и убедитесь, что статус обновился
 }
@@ -129,9 +125,8 @@ func TestSetStatus(t *testing.T) {
 func TestGetByClient(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
+
 	defer db.Close() // настройте подключение к БД
 
 	store := NewParcelStore(db)
@@ -165,18 +160,13 @@ func TestGetByClient(t *testing.T) {
 
 	// get by client
 	storedParcels, err := store.GetByClient(client) // получите список посылок по идентификатору клиента, сохранённого в переменной client
-	require.NoError(t, err)                         // убедитесь в отсутствии ошибки
-	require.Equal(t, len(parcels), len(parcelMap))  // убедитесь, что количество полученных посылок совпадает с количеством добавленных
+	assert.NoError(t, err)                          // убедитесь в отсутствии ошибки
+	assert.Len(t, parcelMap, 3)                     // убедитесь, что количество полученных посылок совпадает с количеством добавленных
 
 	// check
 	for _, parcel := range storedParcels {
 		stored, exists := parcelMap[parcel.Number] // в parcelMap лежат добавленные посылки, ключ - идентификатор посылки, значение - сама посылка
 		assert.True(t, exists, parcel.Number)      // убедитесь, что все посылки из storedParcels есть в parcelMap
-		assert.Equal(t, stored.Number, parcel.Number)
-		assert.Equal(t, stored.Client, parcel.Client)
-		assert.Equal(t, stored.Status, parcel.Status)
-		assert.Equal(t, stored.CreatedAt, parcel.CreatedAt)
-		assert.Equal(t, stored.Address, parcel.Address)
-		// убедитесь, что значения полей полученных посылок заполнены верно
+		assert.Equal(t, stored, parcel)            // убедитесь, что значения полей полученных посылок заполнены верно
 	}
 }

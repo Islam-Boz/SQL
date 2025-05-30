@@ -50,14 +50,21 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 	// здесь из таблицы может вернуться несколько строк
 	p := Parcel{}
 	var res []Parcel
-	row := s.db.QueryRow("SELECT number, client, status, address, created_at FROM parcel WHERE client = :client", sql.Named("client", client))
-	err := row.Scan(&p.Number, &p.Client, &p.Status, &p.Address, &p.CreatedAt)
+	rows, err := s.db.Query("SELECT number, client, status, address, created_at FROM parcel WHERE client = :client", sql.Named("client", client))
 	if err != nil {
-		return res, err
+		return []Parcel{}, err
+	}
+	for rows.Next() {
+
+		err = rows.Scan(&p.Number, &p.Client, &p.Status, &p.Address, &p.CreatedAt)
+		if err != nil {
+			return []Parcel{}, err
+		}
 	}
 	res = append(res, p) // заполните срез Parcel данными из таблицы
 
 	return res, nil
+
 }
 
 func (s ParcelStore) SetStatus(number int, status string) error {
