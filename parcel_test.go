@@ -58,9 +58,10 @@ func TestAddGetDelete(t *testing.T) {
 	err = store.Delete(id)
 	require.NoError(t, err)
 
-	got, err = store.Get(id)
-	require.Equal(t, sql.ErrNoRows, err)
-	require.Empty(t, got)
+	_, err = store.Get(id)
+	require.Error(t, err)
+	assert.ErrorIs(t, sql.ErrNoRows, err)
+
 }
 
 // TestSetAddress проверяет обновление адреса
@@ -87,7 +88,7 @@ func TestSetAddress(t *testing.T) {
 	require.NoError(t, err)
 
 	got, err := store.Get(id)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, newAddress, got.Address)
 	// check
 	// получите добавленную посылку и убедитесь, что адрес обновился
@@ -115,7 +116,7 @@ func TestSetStatus(t *testing.T) {
 	require.NoError(t, err)
 
 	got, err := store.Get(id)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, ParcelStatusSent, got.Status)
 	// check
 	// получите добавленную посылку и убедитесь, что статус обновился
@@ -160,7 +161,7 @@ func TestGetByClient(t *testing.T) {
 
 	// get by client
 	storedParcels, err := store.GetByClient(client) // получите список посылок по идентификатору клиента, сохранённого в переменной client
-	assert.NoError(t, err)                          // убедитесь в отсутствии ошибки
+	require.NoError(t, err)                         // убедитесь в отсутствии ошибки
 	assert.Len(t, parcelMap, 3)                     // убедитесь, что количество полученных посылок совпадает с количеством добавленных
 
 	// check
